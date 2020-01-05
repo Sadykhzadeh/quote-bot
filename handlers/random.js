@@ -5,7 +5,7 @@ module.exports = async (ctx) => {
         $match: {
           $and: [
             { group: ctx.group.info._id },
-            { 'rate.score': { $gte: 0 } }
+            { 'rate.score': { $gt: 0 } }
           ]
         }
       },
@@ -23,7 +23,8 @@ module.exports = async (ctx) => {
             { text: `👎 ${quote.rate.votes[1].vote.length}`, callback_data: 'rate:👎' }
           ]
         ]
-      }
+      },
+      reply_to_message_id: ctx.message.message_id
     })
   } else {
     ctx.replyWithHTML(ctx.i18n.t('rate.random.empty'), {
