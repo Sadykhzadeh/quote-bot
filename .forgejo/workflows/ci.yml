@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: docker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - name: every file has to parse
+        run: |
+          status=0
+          for f in $(git ls-files '*.js'); do
+            node --check "$f" || { echo "syntax error in $f"; status=1; }
+          done
+          exit $status
+      - name: the models, middlewares and locales have to load
+        env:
+          MONGODB_URI: 'mongodb://127.0.0.1:27017/QuoteBotCI'
+        run: |
+          node -e "
+            require('./database');
+            require('./middlewares');
+            const I18n = require('telegraf-i18n');
+            const i18n = new I18n({ directory: require('path').resolve('locales'), defaultLanguage: 'ru' });
+            const locales = Object.keys(i18n.repository);
+            if (locales.length < 5) throw new Error('expected 5 locales, got ' + locales.length);
+            console.log('loaded; locales:', locales.join(', '));
+          "
+      # bot.js itself is not loaded here: helpers/tdlib pulls in airgram, which
+      # needs the native TDLib shared library.
