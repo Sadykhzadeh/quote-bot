@@ -49,7 +49,7 @@ module.exports = async (ctx) => {
   } else {
     const button = []
 
-    Object.keys(locales).map((key) => {
+    Object.keys(locales).forEach((key) => {
       button.push(Markup.callbackButton(locales[key].flag, `set_language:${key}`))
     })
 

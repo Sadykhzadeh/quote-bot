@@ -40,30 +40,29 @@ const bot = new Telegraf(process.env.BOT_TOKEN, {
 })
 
 bot.catch((error) => {
-  console.log('Oops', error)
+  console.error('Oops', error)
 })
 
 bot.context.db = db
 
 bot.use(stats)
 
-bot.use((ctx, next) => {
-  ctx.telegram.oCallApi = ctx.telegram.callApi
-  ctx.telegram.callApi = (method, data = {}) => {
-    console.log(`start ${method}`)
-    const startMs = new Date()
-    return ctx.telegram.oCallApi(method, data).then((result) => {
-      console.log(`end ${method}:`, new Date() - startMs)
+// ctx.telegram is the same object on every update, so wrapping callApi from
+// inside a middleware re-wrapped the previous wrapper each time: after an
+// hour of traffic every API call ran through thousands of nested closures,
+// none of which could ever be collected. Wrapping once, here, is equivalent
+// and bounded. Set BOT_API_TIMING=true to turn the logging on; it used to
+// print two lines per API call unconditionally.
+if (process.env.BOT_API_TIMING === 'true') {
+  const callApi = bot.telegram.callApi.bind(bot.telegram)
+  bot.telegram.callApi = (method, data = {}) => {
+    const startMs = Date.now()
+    return callApi(method, data).then((result) => {
+      console.log(`${method}: ${Date.now() - startMs}ms`)
       return result
     })
   }
-  return next()
-})
-
-bot.use((ctx, next) => {
-  next()
-  return true
-})
+}
 
 bot.use(Composer.groupChat(Composer.command(rateLimit({
   window: 1000 * 20,
@@ -161,6 +160,14 @@ bot.action(/set_language:(.*)/, handleLanguage)
 
 bot.on('message', Composer.privateChat(handleQuote))
 
+db.connection.on('error', (error) => {
+  // Only the 'open' event was listened for, so a bad MONGODB_URI or a
+  // database that was not running left the process alive and completely
+  // silent, never launching the bot and never saying why.
+  console.error('MongoDB connection error:', error)
+  process.exit(1)
+})
+
 db.connection.once('open', async () => {
   console.log('Connected to MongoDB')
 
@@ -173,10 +180,18 @@ db.connection.once('open', async () => {
       }
     }).then(() => {
       console.log('bot start webhook')
+    }).catch((error) => {
+      console.error('could not start the webhook:', error)
+      process.exit(1)
     })
   } else {
     bot.launch().then(() => {
       console.log('bot start polling')
+    }).catch((error) => {
+      // An invalid token rejected here and the rejection went nowhere: the
+      // process stayed up looking healthy with no bot attached to it.
+      console.error('could not start polling:', error)
+      process.exit(1)
     })
   }
 })

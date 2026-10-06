@@ -143,7 +143,7 @@ function getMessages (chatId, messageIds) {
 
             Promise.all(chatInfoPromise).then((chats) => {
               const chatInfo = {}
-              chats.map((chat) => {
+              chats.forEach((chat) => {
                 chatInfo[chat.id] = chat
               })
 

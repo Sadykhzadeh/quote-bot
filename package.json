@@ -4,8 +4,9 @@
   "description": "Telegram quote bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "repository": {
     "type": "git",
@@ -19,21 +20,23 @@
   "homepage": "https://github.com/LyoSU/quote-bot#readme",
   "dependencies": {
     "airgram": "^2.3.0",
-    "dotenv": "^8.2.0",
-    "got": "^10.7.0",
-    "mongoose": "^5.8.2",
-    "sharp": "^0.23.4",
-    "telegraf": "^3.34.1",
+    "dotenv": "^16.4.7",
+    "got": "^11.8.6",
+    "mongoose": "^5.13.23",
+    "sharp": "^0.35.5",
+    "telegraf": "^3.38.0",
     "telegraf-i18n": "^6.6.0",
     "telegraf-ratelimit": "^2.0.0",
-    "uuid": "^7.0.3"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1"
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

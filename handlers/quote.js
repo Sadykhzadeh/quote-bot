@@ -5,7 +5,7 @@ const {
 const got = require('got')
 
 const hashCode = function (s) {
-  let h = 0; var l = s.length; var i = 0
+  let h = 0; const l = s.length; let i = 0
   if (l > 0) {
     while (i < l) { h = (h << 5) - h + s.charCodeAt(i++) | 0 }
   }
@@ -19,7 +19,7 @@ const generateRandomColor = () => {
 }
 
 function sleep (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 module.exports = async (ctx) => {
@@ -284,8 +284,7 @@ module.exports = async (ctx) => {
   })
 
   if (generate.result.image) {
-    // eslint-disable-next-line node/no-deprecated-api
-    const image = new Buffer(generate.result.image, 'base64')
+    const image = Buffer.from(generate.result.image, 'base64')
     if (generate.result.type === 'quote') {
       let replyMarkup = {}
 
